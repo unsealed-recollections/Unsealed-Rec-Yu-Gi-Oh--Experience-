@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yu-Gi-Oh! Card Manager</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .search-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .search-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-input, .filter-select {
+            padding: 0.8rem;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .search-input::placeholder {
+            color: #ccc;
+        }
+
+        .search-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            padding: 0.8rem 2rem;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .card-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #ffd93d;
+        }
+
+        .card-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .remove-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .view-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .collection-section {
+            display: none;
+        }
+
+        .collection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .collection-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 0.8rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .collection-card:hover {
+            transform: scale(1.05);
+        }
+
+        .collection-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .card-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .card-detail-image {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-detail-info h2 {
+            color: #ffd93d;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+
+        .card-detail-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .detail-stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .detail-stat-label {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd93d;
+        }
+
+        .card-description {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            line-height: 1.6;
+        }
+
+        .card-sets {
+            margin-top: 1rem;
+        }
+
+        .set-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+            color: #ffd93d;
+        }
+
+        .error {
+            text-align: center;
+            padding: 2rem;
+            color: #ff6b6b;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .card-detail {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .cards-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-dragon"></i> Yu-Gi-Oh! Card Manager
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showSection('search')">
+                <i class="fas fa-search"></i> Search Cards
+            </button>
+            <button class="nav-btn" onclick="showSection('collection')">
+                <i class="fas fa-layer-group"></i> My Collection (<span id="collection-count">0</span>)
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Search Section -->
+        <div id="search-section" class="search-section">
+            <div class="search-controls">
+                <input type="text" id="card-name" class="search-input" placeholder="Search by card name...">
+                <select id="card-type" class="filter-select">
+                    <option value="">All Types</option>
+                    <option value="Normal Monster">Normal Monster</option>
+                    <option value="Effect Monster">Effect Monster</option>
+                    <option value="Ritual Monster">Ritual Monster</option>
+                    <option value="Fusion Monster">Fusion Monster</option>
+                    <option value="Synchro Monster">Synchro Monster</option>
+                    <option value="XYZ Monster">XYZ Monster</option>
+                    <option value="Link Monster">Link Monster</option>
+                    <option value="Spell Card">Spell Card</option>
+                    <option value="Trap Card">Trap Card</option>
+                </select>
+                <select id="card-attribute" class="filter-select">
+                    <option value="">All Attributes</option>
+                    <option value="LIGHT">LIGHT</option>
+                    <option value="DARK">DARK</option>
+                    <option value="WATER">WATER</option>
+                    <option value="FIRE">FIRE</option>
+                    <option value="EARTH">EARTH</option>
+                    <option value="WIND">WIND</option>
+                    <option value="DIVINE">DIVINE</option>
+                </select>
+                <select id="card-race" class="filter-select">
+                    <option value="">All Races</option>
+                    <option value="Dragon">Dragon</option>
+                    <option value="Spellcaster">Spellcaster</option>
+                    <option value="Warrior">Warrior</option>
+                    <option value="Fiend">Fiend</option>
+                    <option value="Zombie">Zombie</option>
+                    <option value="Machine">Machine</option>
+                    <option value="Aqua">Aqua</option>
+                    <option value="Pyro">Pyro</option>
+                    <option value="Rock">Rock</option>
+                    <option value="Winged Beast">Winged Beast</option>
+                    <option value="Dinosaur">Dinosaur</option>
+                    <option value="Reptile">Reptile</option>
+                    <option value="Fish">Fish</option>
+                    <option value="Sea Serpent">Sea Serpent</option>
+                    <option value="Beast">Beast</option>
+                    <option value="Beast-Warrior">Beast-Warrior</option>
+                    <option value="Plant">Plant</option>
+                    <option value="Insect">Insect</option>
+                    <option value="Thunder">Thunder</option>
+                    <option value="Fairy">Fairy</option>
+                </select>
+                <button class="search-btn" onclick="searchCards()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        <div id="search-results" class="cards-grid">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading cards...
+            </div>
+        </div>
+
+        <!-- Collection Section -->
+        <div id="collection-section" class="collection-section">
+            <h2 style="margin-bottom: 1.5rem; color: #ffd93d;">
+                <i class="fas fa-layer-group"></i> My Collection
+            </h2>
+            <div id="collection-grid" class="collection-grid">
+                <!-- Collection cards will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Detail Modal -->
+    <div id="card-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-card-name">Card Details</h2>
+                <button class="close-btn" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="modal-card-content" class="card-detail">
+                <!-- Card details will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentCards = [];
+        let userCollection = JSON.parse(localStorage.getItem('yugiohCollection')) || [];
+        let currentPage = 0;
+        let isLoading = false;
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInitialCards();
+            updateCollectionCount();
+        });
+
+        // Load initial cards
+        async function loadInitialCards() {
+            try {
+                const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?num=20&offset=0');
+                const data = await response.json();
+                currentCards = data.data;
+                displayCards(currentCards);
+            } catch (error) {
+                document.getElementById('search-results').innerHTML = 
+                    '<div class="error"><i class="fas fa-exclamation-triangle"></i> Failed to load cards. Please try again.</div>';
+            }
+        }
+
+        // Search cards with filters
+        async function searchCards() {
+            const name = document.getElementById('card-name').value;
+            const type = document.getElementById('card-type').value;
+            const attribute = document.getElementById('card-attribute').value;
+            const race = document.getElementById('card-race').value;
+
+            let url = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?num=50&offset=0';
+            
+            if (name) url += `&fname=${encodeURIComponent(name)}`;
+            if (type) url += `&type=${encodeURIComponent(type)}`;
+            if (attribute) url += `&attribute=${encodeURIComponent(attribute)}`;
+            if (race) url += `&race=${encodeURIComponent(race)}`;
+
+            document.getElementById('search-results').innerHTML = 
+                '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Searching cards...</div>';
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                currentCards = data.data || [];
+                displayCards(currentCards);
+            } catch (error) {
+                document.getElementById('search-results').innerHTML = 
+                    '<div class="error"><i class="fas fa-exclamation-triangle"></i> No cards found or error occurred.</div>';
+            }
+        }
+
+        // Display cards in grid
+        function displayCards(cards) {
+            const container = document.getElementById('search-results');
+            
+            if (cards.length === 0) {
+                container.innerHTML = '<div class="error"><i class="fas fa-info-circle"></i> No cards found.</div>';
+                return;
+            }
+
+            container.innerHTML = cards.map(card => {
+                const inCollection = userCollection.some(c => c.id === card.id);
+                return `
+                    <div class="card-item">
+                        <img src="${card.card_images[0]?.image_url_small || card.card_images[0]?.image_url}" 
+                             alt="${card.name}" class="card-image">
+                        <div class="card-name">${card.name}</div>
+                        <div class="card-stats">
+                            <div class="stat-item">
+                                <span>Type:</span>
+                                <span>${card.type || 'N/A'}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Attribute:</span>
+                                <span>${card.attribute || 'N/A'}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Level:</span>
+                                <span>${card.level || 'N/A'}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Race:</span>
+                                <span>${card.race || 'N/A'}</span>
+                            </div>
+                            ${card.atk !== undefined ? `
+                            <div class="stat-item">
+                                <span>ATK:</span>
+                                <span>${card.atk}</span>
+                            </div>
+                            ` : ''}
+                            ${card.def !== undefined ? `
+                            <div class="stat-item">
+                                <span>DEF:</span>
+                                <span>${card.def}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="card-actions">
+                            <button class="action-btn ${inCollection ? 'remove-btn' : 'add-btn'}" 
+                                    onclick="toggleCollection(${card.id})">
+                                <i class="fas ${inCollection ? 'fa-minus' : 'fa-plus'}"></i>
+                                ${inCollection ? 'Remove' : 'Add'}
+                            </button>
+                            <button class="action-btn view-btn" onclick="showCardDetail(${card.id})">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Toggle card in collection
+        function toggleCollection(cardId) {
+            const card = currentCards.find(c => c.id === cardId);
+            if (!card) return;
+
+            const existingIndex = userCollection.findIndex(c => c.id === cardId);
+            
+            if (existingIndex > -1) {
+                userCollection.splice(existingIndex, 1);
+            } else {
+                userCollection.push({
+                    id: card.id,
+                    name: card.name,
+                    image: card.card_images[0]?.image_url_small || card.card_images[0]?.image_url,
+                    type: card.type,
+                    attribute: card.attribute,
+                    level: card.level,
+                    atk: card.atk,
+                    def: card.def
+                });
+            }
+
+            localStorage.setItem('yugiohCollection', JSON.stringify(userCollection));
+            updateCollectionCount();
+            displayCards(currentCards); // Refresh display
+        }
+
+        // Update collection count
+        function updateCollectionCount() {
+            document.getElementById('collection-count').textContent = userCollection.length;
+        }
+
+        // Show collection
+        function showCollection() {
+            const container = document.getElementById('collection-grid');
+            
+            if (userCollection.length === 0) {
+                container.innerHTML = '<div class="error"><i class="fas fa-info-circle"></i> Your collection is empty. Add some cards!</div>';
+                return;
+            }
+
+            container.innerHTML = userCollection.map(card => `
+                <div class="collection-card" onclick="showCardDetail(${card.id})">
+                    <img src="${card.image}" alt="${card.name}">
+                    <div style="text-align: center;">
+                        <div style="font-weight: bold; margin-bottom: 0.5rem;">${card.name}</div>
+                        <div style="font-size: 0.8rem; color: #ccc;">
+                            ${card.type || ''} ${card.attribute ? `• ${card.attribute}` : ''}
+                        </div>
+                        ${card.atk !== undefined ? `
+                        <div style="font-size: 0.8rem; margin-top: 0.5rem;">
+                            ATK: ${card.atk} ${card.def !== undefined ? `• DEF: ${card.def}` : ''}
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show card detail modal
+        async function showCardDetail(cardId) {
+            const card = currentCards.find(c => c.id === cardId) || 
+                        userCollection.find(c => c.id === cardId);
+            
+            if (!card) {
+                // Fetch individual card if not in current data
+                try {
+                    const response = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?id=${cardId}`);
+                    const data = await response.json();
+                    card = data.data[0];
+                } catch (error) {
+                    alert('Failed to load card details');
+                    return;
+                }
+            }
+
+            document.getElementById('modal-card-name').textContent = card.name;
+            
+            const content = `
+                <div>
+                    <img src="${card.card_images[0]?.image_url || card.image}" 
+                         alt="${card.name}" class="card-detail-image">
+                </div>
+                <div class="card-detail-info">
+                    <h2>${card.name}</h2>
+                    <div class="card-detail-stats">
+                        <div class="detail-stat">
+                            <div class="detail-stat-label">Type</div>
+                            <div class="detail-stat-value">${card.type || 'N/A'}</div>
+                        </div>
+                        <div class="detail-stat">
+                            <div class="detail-stat-label">Attribute</div>
+                            <div class="detail-stat-value">${card.attribute || 'N/A'}</div>
+                        </div>
+                        <div class="detail-stat">
+                            <div class="detail-stat-label">Level</div>
+                            <div class="detail-stat-value">${card.level || 'N/A'}</div>
+                        </div>
+                        <div class="detail-stat">
+                            <div class="detail-stat-label">Race</div>
+                            <div class="detail-stat-value">${card.race || 'N/A'}</div>
+                        </div>
+                        ${card.atk !== undefined ? `
+                        <div class="detail-stat">
+                            <div class="detail-stat-label">ATK</div>
+                            <div class="detail-stat-value">${card.atk}</div>
+                        </div>
+                        ` : ''}
+                        ${card.def !== undefined ? `
+                        <div class="detail-stat">
+                            <div class="detail-stat-label">DEF</div>
+                            <div class="detail-stat-value">${card.def}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="card-description">
+                        <h3 style="margin-bottom: 1rem; color: #ffd93d;">Description</h3>
+                        <p>${card.desc || 'No description available.'}</p>
+                    </div>
+
+                    ${card.card_sets && card.card_sets.length > 0 ? `
+                    <div class="card-sets">
+                        <h3 style="margin-bottom: 1rem; color: #ffd93d;">Card Sets</h3>
+                        ${card.card_sets.map(set => `
+                            <div class="set-item">
+                                <div>
+                                    <strong>${set.set_name}</strong><br>
+                                    <small>${set.set_code} - ${set.set_rarity}</small>
+                                </div>
+                                <div style="text-align: right;">
+                                    <strong>$${set.set_price}</strong>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+
+                    <div style="margin-top: 2rem;">
+                        <button class="action-btn ${userCollection.some(c => c.id === card.id) ? 'remove-btn' : 'add-btn'}" 
+                                onclick="toggleCollection(${card.id}); closeModal();">
+                            <i class="fas ${userCollection.some(c => c.id === card.id) ? 'fa-minus' : 'fa-plus'}"></i>
+                            ${userCollection.some(c => c.id === card.id) ? 'Remove from Collection' : 'Add to Collection'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modal-card-content').innerHTML = content;
+            document.getElementById('card-modal').style.display = 'block';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('card-modal').style.display = 'none';
+        }
+
+        // Show different sections
+        function showSection(section) {
+            const searchSection = document.getElementById('search-section');
+            const searchResults = document.getElementById('search-results');
+            const collectionSection = document.getElementById('collection-section');
+            const navBtns = document.querySelectorAll('.nav-btn');
+
+            navBtns.forEach(btn => btn.classList.remove('active'));
+
+            if (section === 'search') {
+                searchSection.style.display = 'block';
+                searchResults.style.display = 'grid';
+                collectionSection.style.display = 'none';
+                navBtns[0].classList.add('active');
+            } else {
+                searchSection.style.display = 'none';
+                searchResults.style.display = 'none';
+                collectionSection.style.display = 'block';
+                navBtns[1].classList.add('active');
+                showCollection();
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('card-modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Handle Enter key in search
+        document.getElementById('card-name').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchCards();
+            }
+        });
+    </script>
+</body>
+</html>
